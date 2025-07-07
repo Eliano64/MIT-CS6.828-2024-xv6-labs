@@ -1,6 +1,8 @@
+using gdb:
 1. Looking at the backtrace output, usertrap() at kernal/trap.c:67 called syscall.
 2. The value of p->trapframe->a7 is 5, which represents SYS_read.
 3. The previous mode that the CPU was in User Mode.
 4. lw a3,0(zero) # 0x0. It is a3 that corresponds to the variable num.
 5. load data from an invalid address 0x0, which triggered a Store access fault exception in RISC-V.
 6. It's "initcode", and its pid is 1.
+
