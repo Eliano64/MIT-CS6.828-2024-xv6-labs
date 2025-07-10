@@ -313,6 +313,7 @@ QEMUOPTS += -device e1000,netdev=net0,bus=pcie.0
 endif
 
 qemu: $K/kernel fs.img
+	rm $U/_pgtbltest
 	$(QEMU) $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl-riscv

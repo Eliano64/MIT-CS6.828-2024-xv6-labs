@@ -93,8 +93,8 @@ supercheck(uint64 s)
     pte_t pte = (pte_t) pgpte((void *) p);
     if(pte == 0)
       err("no pte");
-    if ((uint64) last_pte != 0 && pte != last_pte) {
-        err("pte different");
+    if ((uint64) last_pte != 0 && pte != last_pte) {  
+      err("pte different");
     }
     if((pte & PTE_V) == 0 || (pte & PTE_R) == 0 || (pte & PTE_W) == 0){
       err("pte wrong");
@@ -123,7 +123,6 @@ superpg_test()
   char *end = sbrk(N);
   if (end == 0 || end == (char*)0xffffffffffffffff)
     err("sbrk failed");
-  
   uint64 s = SUPERPGROUNDUP((uint64) end);
   supercheck(s);
   if((pid = fork()) < 0) {

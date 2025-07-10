@@ -281,12 +281,26 @@ growproc(int n)
   struct proc *p = myproc();
 
   sz = p->sz;
+  uint64 nsz = p->sz+n;
   if(n > 0){
-    if((sz = uvmalloc(p->pagetable, sz, sz + n, PTE_W)) == 0) {
-      return -1;
+    if(n>=SUPERPGSIZE && n<10*SUPERPGSIZE){
+      //如果直接SUPERPGROUNDUP再分配超级块的话，会导致“空隙”
+      //使得panic("uvmcopy: page not present");
+      //为了防止这个问题，先通过分配普通块的方式进行对齐。
+      if(((sz = uvmalloc(p->pagetable, sz, SUPERPGROUNDUP(sz), PTE_W)) == 0) || ((p->sz=sz)==0)){
+        return -1;
+      }
+      if((sz = uvmalloc(p->pagetable, sz, nsz, PTE_S|PTE_W)) == 0) {
+        return -1;
+      }
+    }
+    else{
+      if((sz = uvmalloc(p->pagetable, sz, nsz, PTE_W)) == 0) {
+        return -1;
+      }
     }
   } else if(n < 0){
-    sz = uvmdealloc(p->pagetable, sz, sz + n);
+    sz = uvmdealloc(p->pagetable, sz, nsz);
   }
   p->sz = sz;
   return 0;

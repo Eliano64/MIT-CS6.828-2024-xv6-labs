@@ -1,0 +1,7 @@
+{
+    "C_Cpp.dimInactiveRegions": false,
+    "files.associations": {
+        "defs.h": "c",
+        "types.h": "c"
+    }
+}

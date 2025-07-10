@@ -43,7 +43,7 @@ sys_sbrk(void)
 
   argint(0, &n);
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if(growproc(n) < 0)//TODO: 1
     return -1;
   return addr;
 }
