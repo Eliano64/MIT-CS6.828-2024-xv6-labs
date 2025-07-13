@@ -38,6 +38,7 @@ usertrap(void)
 {
   int which_dev = 0;
 
+
   if((r_sstatus() & SSTATUS_SPP) != 0)
     panic("usertrap: not from user mode");
 
@@ -49,6 +50,15 @@ usertrap(void)
   
   // save user program counter.
   p->trapframe->epc = r_sepc();
+
+  uint64 va = r_stval();
+  if (va >= MAXVA){
+      setkilled(p);
+      goto err;
+    }
+  pte_t *pte;
+  char *mem;
+
   
   if(r_scause() == 8){
     // system call
@@ -65,14 +75,43 @@ usertrap(void)
     intr_on();
 
     syscall();
-  } else if((which_dev = devintr()) != 0){
+  } 
+  else if( r_scause()==15){
+    if((pte = walk(p->pagetable, va, 0)) == 0 || (*pte & PTE_V) == 0 || (*pte & PTE_U) == 0){
+        goto err;
+      }
+    uint64 pa = PTE2PA(*pte);
+    uint flags = PTE_FLAGS(*pte);
+    if(flags & PTE_C){
+      if((uint64)getref((void *)pa)==1L){
+        *pte = (*pte & ~PTE_C) | PTE_W;
+      }
+      else{
+        if((mem=kalloc()) == 0){
+          printf("usertrap(): can't allocate pages!\n");
+          goto err;
+        }
+        memmove(mem,(char *)pa, PGSIZE);
+        flags = (flags & ~PTE_C) | PTE_W;
+        *pte = PA2PTE(mem) | flags;
+        kfree((void *)pa);
+      }
+      sfence_vma();
+    }
+    else{
+      printf("usertrap(): no right to write!\n");
+      goto err;
+    }
+  }
+  else if((which_dev = devintr()) != 0){
     // ok
   } else {
+    err:
     printf("usertrap(): unexpected scause 0x%lx pid=%d\n", r_scause(), p->pid);
     printf("            sepc=0x%lx stval=0x%lx\n", r_sepc(), r_stval());
     setkilled(p);
   }
-
+  
   if(killed(p))
     exit(-1);
 
