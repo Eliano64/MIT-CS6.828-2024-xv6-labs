@@ -197,7 +197,6 @@ UPROGS=\
 
 
 
-
 ifeq ($(LAB),syscall)
 UPROGS += \
 	$U/_attack\
@@ -257,7 +256,8 @@ endif
 
 ifeq ($(LAB),fs)
 UPROGS += \
-	$U/_bigfile
+	$U/_bigfile \
+	$U/_symlinktest
 endif
 
 
